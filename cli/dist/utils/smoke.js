@@ -116,7 +116,12 @@ function readPath(value, path) {
             return undefined;
         if (!Object.hasOwn(current, part))
             return undefined;
-        current = current[part];
+        // Resolve only own data properties. Besides avoiding inherited properties, this
+        // avoids invoking accessors on values supplied by smoke-test responses.
+        const descriptor = Object.getOwnPropertyDescriptor(current, part);
+        if (!descriptor || !("value" in descriptor))
+            return undefined;
+        current = descriptor.value;
     }
     return current;
 }
