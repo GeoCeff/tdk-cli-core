@@ -47,7 +47,7 @@
     "build:watch": "tsc --watch",
     "lint": "biome check .",
     "lint:fix": "biome check . --write",
-    "typecheck": "tsc --project tsconfig.typecheck.json",
+    "typecheck": "bun check",
     "clean": "rm -rf dist",
     "dev": "bun run build:watch",
     "test": "vitest run",
