@@ -1,72 +1,89 @@
-# Use TDK tools from Codex
+# Connect Codex or Claude Code to the TDK MCP server
 
-This guide shows how to use the TDK MCP in Codex to check your machine, inspect a TDK project, start services, and read their logs. You can ask in plain language; you do not need to write JavaScript or call the tools by name.
+TDK includes a local Model Context Protocol (MCP) server in its CLI. Once TDK is installed, clients can launch `tdk mcp` over stdio; there is no separate MCP package or hosted endpoint. Start the client from the TDK project directory, or set that directory explicitly in the client configuration, so project tools find `.tdk/project.json`.
+
+This guide covers Codex and Claude Code. You can ask for operations in plain language; you do not need to write JavaScript or call the tools by name.
 
 ![Animated Doctor, Up, Status, and Logs icon demo](../assets/tdk-mcp-tool-icons.svg)
 
-## Connect the MCP in Codex
+## Install TDK
 
-This repository already includes a project-scoped MCP entry in `.codex/config.toml`:
+Install the CLI with npm (Node.js 22.12 or newer) or use the prebuilt binary:
+
+```bash
+npm install -g @tdk-landscape/tdk-cli-core
+# or, on macOS/Linux
+curl -fsSL https://tdk-landscape.github.io/install.sh | sh
+tdk --version
+```
+
+Both installation paths include `tdk mcp`. You do not need to install an MCP SDK, package, or server separately. The CLI starts the MCP server locally and communicates with the client over stdio; it is not a network service. Docker and Tilt are needed to start a stack, but not to connect the client or run `doctor`.
+
+## Connect Codex
+
+Add a project-scoped entry to `.codex/config.toml` in the TDK project. Replace the example directory with the absolute path to the directory containing `.tdk/project.json`:
 
 ```toml
 [mcp_servers.tdk]
 command = "tdk"
 args = ["mcp"]
+cwd = "/path/to/your/tdk-project"
 ```
 
-For another project, connect the local TDK server in either of these ways:
+Codex loads project-scoped MCP settings only for trusted projects. You can also create the entry from a terminal with `codex mcp add tdk -- tdk mcp`, then set its `cwd` as shown above so it launches from the TDK project. Consult Codex's [MCP setup](https://developers.openai.com/codex/extend/mcp) for other configuration options.
 
-- **Codex desktop app:** open **Settings → MCP servers → Add server**. Choose **STDIO**, set the command to `tdk`, add `mcp` as its argument, save, then select **Restart**.
-- **Codex CLI:** run `codex mcp add tdk -- tdk mcp`.
+Confirm the server appears in the desktop app with `/mcp`, or in the CLI with `codex mcp list`.
 
-Project-scoped MCP settings load for trusted projects. Confirm the connection in the desktop app with `/mcp`, or in the CLI with `codex mcp list`. The desktop app, CLI, and IDE extension share MCP configuration. See [Codex MCP setup](https://developers.openai.com/codex/extend/mcp) for other setup options.
+## Connect Claude Code
+
+From the TDK project directory, add a local stdio server and start Claude Code there:
+
+```bash
+cd /path/to/your/tdk-project
+claude mcp add --scope local --transport stdio tdk -- tdk mcp
+claude
+```
+
+Run `/mcp` inside Claude Code to confirm the server is connected. The `local` scope keeps this configuration in your local Claude Code settings for the current project. See the [Claude Code MCP guide](https://code.claude.com/docs/en/mcp) for other scopes and configuration options.
 
 ## Before you start
 
-- Install TDK and its host requirements. See the [operator runbook](../operator-runbook.md).
-- Open the TDK project you want to work with in Codex. Project actions need the workspace root to contain `.tdk/project.json`.
+- Install TDK as described above. To start a stack, install and start Docker and install Tilt; see the [operator runbook](../operator-runbook.md).
+- Open the TDK project you want to work with in Codex or Claude Code. Project actions need the working directory to contain `.tdk/project.json`.
 
-The `doctor` check can run before a project is open; listing resources, checking project status, and starting a stack need a TDK project.
+The `doctor` check can run outside a TDK project. Listing resources, checking project status, and starting a stack need the client to launch TDK from a project root containing `.tdk/project.json`.
 
 ## A first run
 
-### 1. Check whether the machine is ready
+### 1. Run doctor
 
-In Codex, ask:
+Ask the connected agent:
 
 > Run TDK doctor. Tell me what would block a stack from starting, and do not start anything yet.
 
-Doctor checks Docker, Tilt, Docker Compose, host ports, and other local requirements. If a check fails, fix the reported issue and ask Codex to run doctor again. The result includes a readiness flag and a suggested fix for each failed check.
+Doctor checks Docker, Tilt, Docker Compose, host ports, and other local requirements. If a check fails, fix the reported issue and run doctor again. A passing doctor check means the host can start TDK; it does not mean the application services are ready.
 
-### 2. Inspect your project
-
-With the TDK project open, ask:
-
-> List this project's TDK services and show their stack, type, and port. Then check which services are ready.
-
-Codex uses the resource list and status tools for this. If you see `Could not find project root`, open the directory that contains `.tdk/project.json` in Codex and retry.
-
-### 3. Start the stack
+### 2. Start the stack and check readiness
 
 When doctor passes, ask:
 
-> Start the TDK stack for this project, then check status until Tilt reports readiness.
+> Start this project's TDK stack, then check status until Tilt reports readiness.
 
-TDK starts the stack in the background. Starting successfully does not mean every service is healthy yet, so check status afterward. You can start a subset by naming the services:
+`up` starts Tilt detached and returns when startup has begun; a successful `up` response does not mean the stack is ready. Call `status` again until `data.tilt.readiness.ready` is `true`. If `status` reports pending services or failures, use `logs` to inspect them.
 
-> Start only the `web` service and its dependencies, then check status.
+### 3. Inspect and stop
 
-### 4. Look at logs or stop the stack
+Ask the agent to list project resources or take a bounded log snapshot, then stop the stack when finished:
 
-Ask for a recent log snapshot, optionally naming a service and time window:
+> List this project's TDK services and show their stack, type, and port.
 
 > Show the last 10 minutes of API logs.
 
-When you are done, ask:
-
 > Stop this project's TDK stack.
 
-## What to ask Codex
+To start a subset, name the services; TDK also starts their dependencies and shared infrastructure: “Start only the `web` service and its dependencies, then check status.”
+
+## What to ask your agent
 
 | Goal | Example request |
 | --- | --- |
@@ -87,4 +104,15 @@ When you are done, ask:
 
 ## Tool reference
 
-The MCP tools are `doctor`, `resource_list`, `status`, `up`, `logs`, and `down`. Codex selects them from your request. If you are writing an integration that calls them directly, see the [TDK MCP quick guide](tdk-mcp.md). For the CLI's JSON output and exit codes, see the [machine-readable CLI reference](../reference/machine-readable-cli.md) and the [doctor contract](../reference/doctor-contract.md).
+The server exposes these six tools, backed by the corresponding TDK CLI commands:
+
+| Tool | What it does | Inputs |
+| --- | --- | --- |
+| `doctor` | Check whether this machine can run a TDK stack; use before `up`. | `noPing` (optional) |
+| `up` | Start the whole stack or a subset in the background. It returns before readiness. | `stack`, `only`, `force`, `waitSeconds` (all optional) |
+| `status` | Show stacks, resources, URLs, ports, and Tilt readiness. | None |
+| `resource_list` | List project resources with their stack, type, and port. | `stack` (optional) |
+| `logs` | Return a bounded snapshot of recent logs, not a live stream. | `services`, `tail` (default 200, maximum 10,000), `since` (for example `5m`) |
+| `down` | Stop the running stack. | None |
+
+For example, an MCP client that calls tools directly can run `doctor`, `up`, and `status` in sequence; keep checking `status` until `data.tilt.readiness.ready` is true. See the [TDK MCP quick guide](tdk-mcp.md) for call examples, the [machine-readable CLI reference](../reference/machine-readable-cli.md) for JSON output and exit codes, and the [doctor contract](../reference/doctor-contract.md) for doctor details.
