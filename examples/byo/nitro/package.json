@@ -1,1 +1,17 @@
-{ "name": "edge-api", "private": true, "type": "module", "scripts": { "build": "nitropack build" }, "devDependencies": { "nitropack": "^2.10.0" } }
+{
+  "name": "edge-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nitropack build"
+  },
+  "devDependencies": {
+    "nitropack": "^2.10.0",
+    "node-forge": "file:vendor/node-forge-1.4.1-tdk.1.tgz",
+    "braces": "file:vendor/braces-3.0.4-tdk.1.tgz"
+  },
+  "overrides": {
+    "node-forge": "file:vendor/node-forge-1.4.1-tdk.1.tgz",
+    "braces": "file:vendor/braces-3.0.4-tdk.1.tgz"
+  }
+}
