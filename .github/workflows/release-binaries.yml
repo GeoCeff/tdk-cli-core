@@ -221,7 +221,8 @@ jobs:
           package-manager-cache: false
 
       - name: Update npm for trusted publishing
-        run: npm install -g github:npm/cli#0c2278c72f40730e1eb8a4e71e7763d1cf9276c8 # npm@12.2.0
+        run: | # zizmor: ignore[adhoc-packages] npm CLI itself is pinned to a full upstream commit for trusted publishing
+          npm install -g github:npm/cli#0c2278c72f40730e1eb8a4e71e7763d1cf9276c8 # npm@12.2.0
 
       - name: Restore selected release version
         if: needs.build.outputs.bumped == 'true'
