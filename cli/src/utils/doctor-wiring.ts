@@ -11,6 +11,7 @@ import {
   BRING_YOUR_OWN_TYPE,
   DATABASE_MANAGEMENT_FEATURE,
   DOCKER_COMPOSE_FILE,
+  PACKAGE_JSON,
   PROJECT_JSON,
 } from "./constants.js";
 import { type ExecAsync, execAsync } from "./exec-async.js";
@@ -53,7 +54,7 @@ function readParams(configPath: string): Record<string, string> {
 
 function packageJson(resourcePath: string): Record<string, unknown> {
   try {
-    const value = JSON.parse(readFileSync(join(resourcePath, "package.json"), "utf-8"));
+    const value = JSON.parse(readFileSync(join(resourcePath, PACKAGE_JSON), "utf-8"));
     return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
   } catch {
     return {};
@@ -240,7 +241,7 @@ export function checkResourcePackageJson(
       (resource) =>
         !isBringYourOwn(resource) &&
         !ownsRuntimeFiles(resource) &&
-        !existsSync(join(resource.path, "package.json")),
+        !existsSync(join(resource.path, PACKAGE_JSON)),
     )
     .map((resource) => resource.name);
 
@@ -528,7 +529,7 @@ function readText(path: string): string | undefined {
 }
 
 function startScriptMigrations(resourceDir: string): string[] {
-  const text = readText(join(resourceDir, "package.json"));
+  const text = readText(join(resourceDir, PACKAGE_JSON));
   if (text === undefined) return [];
   let scripts: Record<string, unknown> = {};
   try {
