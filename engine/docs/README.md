@@ -157,6 +157,8 @@ PackageConfig.generate_npmrc(path, registry_url, is_docker)
 PackageConfig.generate_bunfig(path, registry_url, is_docker)
 ```
 
+Generated registry files contain routing only. The default Verdaccio policy allows anonymous package reads; publishing requires a user login, for example `npm login --registry=http://localhost:4873`. Keep those credentials in the user's npm config rather than in generated project files.
+
 ---
 
 ### Lifecycle Layer (`lifecycle/`)
