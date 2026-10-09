@@ -55,11 +55,13 @@ jobs:
         run: | # zizmor: ignore[adhoc-packages] installs the checkout's packed CLI
           npm run build
           npm pack --pack-destination "$RUNNER_TEMP"
-          npm install --global "$RUNNER_TEMP"/tdk-cli-internal-*.tgz
+          node ../scripts/install-global.mjs "$RUNNER_TEMP"/tdk-cli-internal-*.tgz
           tdk --version
 
       - name: Install JSON Schema validator
-        run: npm install --global ajv-cli@5.0.0 # zizmor: ignore[adhoc-packages] pins the validator used by the contract test
+        run: |
+          npm ci --prefix scripts/ajv-cli --ignore-scripts --no-audit --no-fund
+          echo "$GITHUB_WORKSPACE/scripts/ajv-cli/node_modules/.bin" >> "$GITHUB_PATH"
 
       - name: Boot BYO Python fixture
         run: bash tests/e2e/byo-python-boot.test.sh

@@ -52,7 +52,7 @@ fi
 
 cd "$clientdir"
 npm init -y >/dev/null 2>&1
-npm install --no-audit --no-fund @modelcontextprotocol/sdk@1 >/dev/null 2>&1
+npm install --no-audit --no-fund github:modelcontextprotocol/typescript-sdk#ff07b001194fe60ee9deb2121cf119057565796d >/dev/null 2>&1
 cat > client.mjs <<'JS'
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";

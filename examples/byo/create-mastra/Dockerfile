@@ -4,7 +4,7 @@ RUN apk add --no-cache git
 WORKDIR /work
 RUN npm create mastra@latest app -- --empty --no-git --no-skills --no-install
 WORKDIR /work/app
-RUN npm install && grep -A8 '"scripts"' package.json
+RUN npm ci && grep -A8 '"scripts"' package.json
 RUN chown -R node:node .
 USER node
 HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 CMD nc -z 127.0.0.1 4111 || exit 1

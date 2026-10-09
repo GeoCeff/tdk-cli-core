@@ -4,7 +4,7 @@ RUN apk add --no-cache git
 WORKDIR /work
 RUN npx --yes nuxi@latest init app --template minimal --no-install --packageManager npm --gitInit=false </dev/null
 WORKDIR /work/app
-RUN npm install
+RUN npm ci
 RUN chown -R node:node .
 USER node
 HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 CMD nc -z 127.0.0.1 ${PORT:-3000} || exit 1

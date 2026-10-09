@@ -122,14 +122,14 @@ jobs:
             # prepack bundles dist with esbuild (a devDependency)
             bun install --frozen-lockfile
             tarball="$(npm pack --silent | tail -1)"
-            npm install -g "./$tarball"
+            node scripts/install-global.mjs "./$tarball"
             tdk --version
             exit 0
           fi
           if [ "$TDK_VERSION" != "latest" ]; then
             scripts/wait-for-npm-version.sh "@tdk-landscape/tdk-cli-core" "$TDK_VERSION"
           fi
-          npm install -g "@tdk-landscape/tdk-cli-core@${TDK_VERSION}"
+          node scripts/install-global.mjs "@tdk-landscape/tdk-cli-core@${TDK_VERSION}"
           tdk --version
 
       - name: Scaffold the quickstart project

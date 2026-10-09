@@ -10,7 +10,7 @@ echo "🚀 Setting up TDK CLI development environment..."
 # Check if pre-commit is installed
 if ! command -v pre-commit &> /dev/null; then
     echo "📦 Installing pre-commit..."
-    pip install pre-commit
+    pip install --require-hashes -r "$(dirname "$0")/requirements-pre-commit.txt"
 fi
 
 # Install hooks

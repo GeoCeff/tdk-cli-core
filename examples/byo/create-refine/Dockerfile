@@ -5,7 +5,7 @@ FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18
 WORKDIR /work
 RUN (for i in $(seq 1 16); do sleep 2; echo; done) | npm create refine-app@latest app -- -p refine-vite --disable-telemetry
 WORKDIR /work/app
-RUN test -f package.json && npm install
+RUN test -f package.json && npm ci
 RUN chown -R node:node .
 USER node
 # Vite must listen beyond loopback (--host) and on the port TDK assigns.

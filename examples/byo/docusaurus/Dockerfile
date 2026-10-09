@@ -6,7 +6,7 @@ ENV DO_NOT_TRACK=1 CI=true
 WORKDIR /work
 RUN npx --yes create-docusaurus@latest app classic --typescript --skip-install </dev/null
 WORKDIR /work/app
-RUN npm install --no-audit --no-fund
+RUN npm ci --no-audit --no-fund
 RUN chown -R node:node .
 USER node
 HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 CMD node -e "require('net').connect(${PORT:-3000},'127.0.0.1').on('connect',()=>process.exit(0)).on('error',()=>process.exit(1))"

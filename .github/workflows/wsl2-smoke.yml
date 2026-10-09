@@ -84,7 +84,7 @@ jobs:
           bun install --frozen-lockfile
           npm run build
           tarball="$(npm pack --silent | tail -1)"
-          npm install --global "./$tarball"
+          node scripts/install-global.mjs "./$tarball"
           tdk --version | tee -a /root/tdk-evidence/environment.log
 
       - name: Run the existing WSL2 routed write smoke

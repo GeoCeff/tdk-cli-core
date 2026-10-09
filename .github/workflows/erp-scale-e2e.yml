@@ -61,7 +61,7 @@ jobs:
         env:
           TDK_VERSION: ${{ inputs.version || 'latest' }}
         run: | # zizmor: ignore[adhoc-packages] the point is to test what users install
-          npm install -g "@tdk-landscape/tdk-cli-core@${TDK_VERSION}"
+          npm install --global "@tdk-landscape/tdk-cli-core@${TDK_VERSION}"
           tdk --version
 
       - name: Machine resources

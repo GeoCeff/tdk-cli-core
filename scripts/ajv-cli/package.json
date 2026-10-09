@@ -1,0 +1,8 @@
+{
+  "name": "tdk-e2e-ajv-cli",
+  "private": true,
+  "version": "1.0.0",
+  "devDependencies": {
+    "ajv-cli": "5.0.0"
+  }
+}

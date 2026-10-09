@@ -59,7 +59,7 @@ jobs:
       - name: Pack and install the candidate TDK package
         run: | # zizmor: ignore[adhoc-packages] installs our own freshly packed tarball
           tarball="$(npm pack --silent | tail -1)"
-          npm install --global "./$tarball"
+          node scripts/install-global.mjs "./$tarball"
 
       - name: Clone and configure the bundled example
         run: |
@@ -121,8 +121,9 @@ jobs:
           curl -fsS "$api/worker-ready" >/dev/null
           curl -fsS "$app" >/dev/null
 
-          order_id="$(curl -fsS -X POST "$api" -H 'content-type: application/json' \
-            -d '{"item":"CI coffee"}' | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(String(JSON.parse(s).order.id)))')"
+          curl -fsS -X POST "$api" -H 'content-type: application/json' \
+            -d '{"item":"CI coffee"}' -o "$RUNNER_TEMP/order.json"
+          order_id="$(node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).order.id))' "$RUNNER_TEMP/order.json")"
           echo "Created order $order_id through Traefik"
 
           observed=false

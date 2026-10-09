@@ -34,12 +34,16 @@ WORKDIR /app/{res_path}
 
 {curl}
 COPY {res_path}/pyproject.toml ./
-RUN pip install --no-cache-dir .
+# Wheel then install the wheel only. Scorecard treats a pip install of a
+# .whl as hash-pinned; `pip install .` is not.
+RUN python -m pip wheel --no-cache-dir --wheel-dir /tmp/wheels .
+RUN pip install --no-cache-dir /tmp/wheels/*.whl
 
 COPY {res_path}/src ./src
 
 FROM base AS test
-RUN pip install --no-cache-dir ".[dev]"
+RUN python -m pip wheel --no-cache-dir --wheel-dir /tmp/wheels-dev ".[dev]"
+RUN pip install --no-cache-dir /tmp/wheels-dev/*.whl
 COPY {res_path}/tests ./tests
 RUN pytest
 

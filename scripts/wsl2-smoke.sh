@@ -107,8 +107,9 @@ check_routed_response 'API health via Traefik' "$api/health" '"ok":true'
 check_routed_response 'Worker readiness via Traefik' "$api/worker-ready" '"ready":true'
 check_routed_response 'Orders app via Traefik' "$app" '<title>TDK Orders</title>'
 
-order_id="$(curl -fsS -X POST "$api" -H 'content-type: application/json' \
-  -d '{"item":"WSL2 smoke test"}' | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(String(JSON.parse(s).order.id)))')"
+curl -fsS -X POST "$api" -H 'content-type: application/json' \
+  -d '{"item":"WSL2 smoke test"}' -o "${TMPDIR:-/tmp}/tdk-wsl2-order.json"
+order_id="$(node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).order.id))' "${TMPDIR:-/tmp}/tdk-wsl2-order.json")"
 echo "Created order $order_id through Traefik"
 
 observed=false

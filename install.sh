@@ -15,7 +15,28 @@
 
 set -euo pipefail
 
-readonly OFFICIAL_INSTALLER="https://tdk-landscape.github.io/install.sh"
+# Pinned to a commit of tdk-landscape/tdk-landscape.github.io and verified
+# against the SHA-256 of that exact install.sh before it is executed.
+readonly OFFICIAL_INSTALLER="https://raw.githubusercontent.com/tdk-landscape/tdk-landscape.github.io/71ed55f1aca54f0a4c2fd45236c59228803725b4/install.sh"
+readonly OFFICIAL_INSTALLER_SHA256="add9c92c79947116d2845ecdecc2e0643e84b5aae31e6dd807dee0fe67f11fb0"
 
 echo "Using the official TDK installer: ${OFFICIAL_INSTALLER}" >&2
-curl -fsSL "${OFFICIAL_INSTALLER}" | sh
+installer_tmp="$(mktemp)"
+trap 'rm -f "$installer_tmp"' EXIT
+curl -fsSL "$OFFICIAL_INSTALLER" -o "$installer_tmp"
+
+if command -v sha256sum >/dev/null 2>&1; then
+  actual_sha256="$(sha256sum "$installer_tmp" | awk '{print $1}')"
+elif command -v shasum >/dev/null 2>&1; then
+  actual_sha256="$(shasum -a 256 "$installer_tmp" | awk '{print $1}')"
+else
+  echo "Error: sha256sum or shasum is required to verify the official installer." >&2
+  exit 1
+fi
+
+if [[ "$actual_sha256" != "$OFFICIAL_INSTALLER_SHA256" ]]; then
+  echo "Error: official installer checksum mismatch; refusing to execute it." >&2
+  exit 1
+fi
+
+sh "$installer_tmp"
